@@ -1,0 +1,7 @@
+import 'package:flutter/material.dart';
+import '../state/app_controller.dart';
+import '../models/models.dart';
+import '../widgets/common.dart';
+class InquiryScreen extends StatefulWidget{final AppController controller;const InquiryScreen({super.key,required this.controller});@override State<InquiryScreen>createState()=>_InquiryScreenState();}
+class _InquiryScreenState extends State<InquiryScreen>{String q='';@override Widget build(BuildContext c){final arr=widget.controller.searchItems(q);return ListView(padding:const EdgeInsets.all(10),children:[SectionCard(child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Text('استعلام الأسعار',style:Theme.of(c).textTheme.titleLarge?.copyWith(fontWeight:FontWeight.w800)),const SizedBox(height:8),TextField(onChanged:(v)=>setState(()=>q=v),decoration:const InputDecoration(prefixIcon:Icon(Icons.search),hintText:'اسم أو جزء من الاسم أو رقم الصنف'))])),...arr.map((it)=>_item(c,it))]);}
+Widget _item(BuildContext c,Item it){final l=widget.controller.lists;return Card(child:ExpansionTile(title:Text(it.name),subtitle:Text('${it.code} • ${it.unit}'),trailing:Text(widget.controller.money(widget.controller.suggestedPrice(it,widget.controller.priceListId)),style:const TextStyle(fontWeight:FontWeight.w800)),children:l.map((x)=>ListTile(title:Text(x.name),trailing:Text(widget.controller.money(widget.controller.suggestedPrice(it,x.id))))).toList()));}}

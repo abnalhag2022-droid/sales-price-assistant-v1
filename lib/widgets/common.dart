@@ -1,0 +1,6 @@
+import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
+
+class SectionCard extends StatelessWidget { final Widget child; const SectionCard({super.key,required this.child}); @override Widget build(BuildContext c)=>Card(child:Padding(padding:const EdgeInsets.all(13),child:child)); }
+class StatusChip extends StatelessWidget { final bool online; final int queue; const StatusChip({super.key,required this.online,required this.queue}); @override Widget build(BuildContext c)=>Container(padding:const EdgeInsets.symmetric(horizontal:9,vertical:6),decoration:BoxDecoration(color:online?const Color(0xFFEAF8F0):const Color(0xFFFFF4DF),borderRadius:BorderRadius.circular(99)),child:Text(online?'● متصل${queue>0?' • $queue':''}':'● Offline${queue>0?' • $queue':''}',style:TextStyle(fontSize:11,color:online?Colors.green[800]:Colors.orange[900]))); }
+class EmptyState extends StatelessWidget { final String text; const EmptyState(this.text,{super.key}); @override Widget build(BuildContext c)=>Container(width:double.infinity,padding:const EdgeInsets.all(14),decoration:BoxDecoration(color:AppTheme.background,borderRadius:BorderRadius.circular(12)),child:Text(text,style:const TextStyle(color:AppTheme.muted))); }
