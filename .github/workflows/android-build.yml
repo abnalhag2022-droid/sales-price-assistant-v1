@@ -1,0 +1,73 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      demo_mode:
+        description: 'Build the APK in local demo mode'
+        required: true
+        default: true
+        type: boolean
+      api_base_url:
+        description: 'Backend API URL (leave empty for demo mode)'
+        required: false
+        default: ''
+        type: string
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Prepare Android project
+        run: |
+          flutter create . --platforms=android --org com.salespriceassistant --project-name sales_price_assistant
+          sed -i 's/compileSdk = flutter.compileSdkVersion/compileSdk = 36/' android/app/build.gradle.kts
+          python3 tooling/patch_android_manifest.py
+          flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+      - name: Build release APK
+        env:
+          DEMO_MODE: ${{ github.event_name != 'workflow_dispatch' && 'true' || inputs.demo_mode }}
+          API_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.api_base_url || '' }}
+        run: |
+          echo "DEMO_MODE=${DEMO_MODE}"
+          if [ -n "$API_BASE_URL" ]; then
+            flutter build apk --release \
+              --dart-define=DEMO_MODE=${DEMO_MODE} \
+              --dart-define=API_BASE_URL=${API_BASE_URL}
+          else
+            flutter build apk --release \
+              --dart-define=DEMO_MODE=${DEMO_MODE}
+          fi
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: sales-price-assistant-android
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 14
